@@ -1,7 +1,7 @@
 # 🧠 War Oracle
 
 <p align="center">
-  <img src="WarOracle.png" width="360" alt="War Oracle">
+  <img src="https://raw.githubusercontent.com/PHTMGatt/12-React-Portfolio/main/src/assets/photos/War%20Oracle.png" width="900" alt="War Oracle project artwork">
 </p>
 
 **War Oracle** is an automated war intelligence bot for **Clash of Clans** clans on Discord.
