@@ -81,7 +81,7 @@ Create a `.env` file (git-ignored) with these variables. Names only here, never 
 | `POLL_SECONDS` | Optional, default `180` |
 | `ALERT_MINUTES` | Optional, default `720,120,30` |
 
-`war_snapshot.json` is written at runtime in the working directory.
+`war_snapshot.json` is written at runtime in the working directory (git-ignored).
 
 ## ✅ CI
 
