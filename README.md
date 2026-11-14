@@ -55,4 +55,38 @@ Clans shouldn’t babysit wars.
 
 ---
 
+## 🚀 Run It
+
+**Status:** stable, maintained. Requires Node 18+ (uses built-in `fetch`).
+
+```bash
+npm install
+npm run deploy-commands   # registers /ping and /war slash commands (guild-scoped)
+npm start                 # starts the bot
+npm test                  # syntax check (also run by CI)
+```
+
+Create a `.env` file (git-ignored) with these variables. Names only here, never commit values:
+
+| Variable | Used for |
+| --- | --- |
+| `DISCORD_TOKEN` | Bot login (required) |
+| `CLIENT_ID`, `GUILD_ID` | Slash command deploy (`deploy-commands.js`) |
+| `COC_TOKEN` | Clash of Clans API token |
+| `CLAN_TAG` | Clan tag, URL-encoded (`%23ABC123`) |
+| `BOT_COMMANDS_CHANNEL_ID` | Optional: lock commands to one channel |
+| `WAR_STATUS_CHANNEL_ID` | `/war status` posts here |
+| `WAR_ALERTS_CHANNEL_ID` | Threshold alerts post here |
+| `WAR_STATS_CHANNEL_ID` | `/war stats` posts here |
+| `POLL_SECONDS` | Optional, default `180` |
+| `ALERT_MINUTES` | Optional, default `720,120,30` |
+
+`war_snapshot.json` is written at runtime in the working directory (git-ignored).
+
+## ✅ CI
+
+GitHub Actions runs install + syntax check and `npm audit --audit-level=high` on every PR. No secrets needed.
+
+---
+
 Built with **discord.js** and the **Clash of Clans API**.
