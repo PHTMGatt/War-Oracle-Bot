@@ -15,3 +15,6 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
+
+# Runtime data (written by the bot)
+war_snapshot.json
