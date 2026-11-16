@@ -72,6 +72,15 @@ Set in a git-ignored `.env` file or the process environment. **Tokens live only 
 
 ## 🥧 Deploy on a Raspberry Pi
 
+> **Recommended: use the [raspbi-pilot](https://github.com/PHTMGatt/raspbi-pilot) installer** (one `sudo ./install.sh` sets up this bot and Legacy Bot as hardened services from `main`). Do not also follow the manual steps below, or you will end up with two installations.
+>
+> Before the first start on a Pi:
+> - **Stop any other copy of this bot** (for example on your PC). Two copies with the same token answer every command and send every alert twice.
+> - Create a **new** Clash of Clans API key for the Pi's public IP; keep the PC's key working until you cut over.
+> - Its `.env` needs its own `DISCORD_TOKEN` (a different Discord app from Legacy Bot). `POLL_SECONDS` must be 30 or more. Leave `DATA_DIR` unset under the raspbi-pilot service: its unit only lets the bot write to its own `data/` folder.
+
+Manual install (alternative):
+
 ```bash
 # Node 20+ (e.g. via NodeSource), then:
 git clone -b claude-forge https://github.com/PHTMGatt/War-Oracle-Bot.git
