@@ -1,0 +1,8 @@
+# gitleaks config for War-Oracle-Bot: the default rules, nothing allowlisted.
+# The CI security job separately scans a built-in fake fixture with the plain default rules and fails
+# unless gitleaks flags it, so this config can't hide a broken scanner.
+# Do not allowlist real secrets here: rotate them and tell the owner.
+title = "War-Oracle-Bot gitleaks config"
+
+[extend]
+useDefault = true

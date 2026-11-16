@@ -40,7 +40,7 @@ jobs:
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
 
       - name: Secret scan (working tree)
-        run: gitleaks dir . --redact --no-banner --verbose
+        run: gitleaks dir . --config .gitleaks.toml --redact --no-banner --verbose
 
       - name: Secret scan catches the fixture
         run: |
@@ -51,7 +51,8 @@ jobs:
           b1="AKIAQ4ZJ7RW2"; b2="XK5M3TNB"
           c1="xoxb-482915736201-"; c2="930174628354-Lq8vNz2RkT5wYb7HmXc4PdJs"
           printf 'github_token = %s%s\naws_access_key_id = %s%s\nslack_bot_token = %s%s\n' "$a1" "$a2" "$b1" "$b2" "$c1" "$c2" > "$RUNNER_TEMP/fixture/fake-credentials.txt"
-          gitleaks dir "$RUNNER_TEMP/fixture" --redact --no-banner \
+          printf '[extend]\nuseDefault = true\n' > "$RUNNER_TEMP/defaults.toml"
+          gitleaks dir "$RUNNER_TEMP/fixture" --config "$RUNNER_TEMP/defaults.toml" --redact --no-banner \
             --exit-code 0 --report-format json --report-path "$RUNNER_TEMP/fixture.json"
           count=$(jq length "$RUNNER_TEMP/fixture.json")
           jq -r '.[] | "flagged: \(.RuleID) in \(.File):\(.StartLine)"' "$RUNNER_TEMP/fixture.json"
