@@ -18,3 +18,4 @@ Thumbs.db
 
 # Runtime data (written by the bot)
 war_snapshot.json
+data/

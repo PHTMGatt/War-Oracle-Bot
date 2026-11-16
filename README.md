@@ -4,88 +4,115 @@
   <img src="https://raw.githubusercontent.com/PHTMGatt/12-React-Portfolio/main/src/assets/photos/War%20Oracle.png" width="900" alt="War Oracle project artwork">
 </p>
 
-**War Oracle** is an automated war intelligence bot for **Clash of Clans** clans on Discord.
+**War Oracle** is a Discord bot for **Clash of Clans** clans: war intelligence plus a few channel safety tools, in one bot with one token.
 
-It monitors active wars, tracks progress in real time, and delivers **clean, non-spammy updates** so leadership always knows what matters — without manual checking.
+> **Merged.** It now also covers what **Clash-Commander-Bot** did (channel lockdown, cleanup, identity). That repo is superseded by this one.
 
----
-
-## ⚔️ What War Oracle Does
-
-- 📊 **Live War Status**  
-  Current score, stars, destruction, and remaining attacks
-
-- 🚨 **Smart War Alerts**  
-  Threshold-based alerts with full deduplication  
-  *(no repeat pings, no spam)*
-
-- 📸 **Snapshot Tracking**  
-  Stores war states over time to detect meaningful changes
-
-- 🔁 **Automated Polling**  
-  Clash of Clans API polled on a fixed interval
-
-- 🧠 **Alert Deduplication**  
-  Each alert fires once per condition, per war
+It watches the active war, posts clean status and stats, and sends **non-spammy** threshold alerts so leadership never has to babysit a war.
 
 ---
 
-## 🛠 Built For
+## ⚔️ Commands
 
-- Competitive war clans  
-- Leadership and war planners  
-- Clean, low-noise Discord servers  
-- Fully automated war oversight  
+| Command | Who | What it does |
+| --- | --- | --- |
+| `/ping` | anyone | Online check + uptime |
+| `/war status` | anyone | Posts current war status (score, remaining attacks, who still has attacks) |
+| `/war stats` | anyone | Posts the last saved snapshot (stars, destruction, missed attacks) |
+| `/war alerts mode:on\|off` | anyone | Toggles threshold alerts (resets to on at restart) |
+| `/lockdown` / `/unlock` | Manage Channels | Stop / allow @everyone sending in this channel |
+| `/cleanup count:<1-50>` | Manage Messages | Deletes the bot's own recent messages in this channel |
+| `/whoami` | Manage Server | Shows the bot's roles and permissions here |
 
-War Oracle speaks **only when it matters**.
+Alerts fire once per threshold per war (default 12h, 2h and 30m before the war ends) and only while someone still has attacks left.
+
+> **Not here (yet):** the old Clash Commander README promised `/audit`, `/note`, `/notes`, `/inactive`, `/ping mods|leaders`, but none of that was ever built. There is no town hall manager or base-link feature in either bot.
 
 ---
 
 ## 🔗 Invite the Bot
 
-Want War Oracle in your server?  
 👉 **[Invite War Oracle](https://discord.com/oauth2/authorize?client_id=1465421621874397298&scope=bot%20applications.commands&permissions=0)**
 
----
-
-## 🧠 Philosophy
-
-Clans shouldn’t babysit wars.  
-**War Oracle watches so you don’t have to.**
+Slash commands are registered automatically on startup. `/lockdown`, `/unlock` and `/cleanup` need the bot to have Manage Channels / Manage Messages in the channel.
 
 ---
 
-## 🚀 Run It
+## ⚙️ Setup
 
-**Status:** stable, maintained. Requires Node 18+ (uses built-in `fetch`).
+Requires Node 20+. Create the bot in the [Discord developer portal](https://discord.com/developers/applications) (no privileged intents needed) and get a key from the [Clash of Clans developer portal](https://developer.clashofclans.com).
+
+> **The Clash API key is locked to the public IP you register.** Moving the bot to a new machine (for example a Raspberry Pi) means creating a new key for that IP.
 
 ```bash
 npm install
-npm run deploy-commands   # registers /ping and /war slash commands (guild-scoped)
-npm start                 # starts the bot
-npm test                  # syntax check (also run by CI)
+npm start
+npm test        # unit tests (also run by CI)
 ```
 
-Create a `.env` file (git-ignored) with these variables. Names only here, never commit values:
+### Environment variables
 
-| Variable | Used for |
-| --- | --- |
-| `DISCORD_TOKEN` | Bot login (required) |
-| `CLIENT_ID`, `GUILD_ID` | Slash command deploy (`deploy-commands.js`) |
-| `COC_TOKEN` | Clash of Clans API token |
-| `CLAN_TAG` | Clan tag, URL-encoded (`%23ABC123`) |
-| `BOT_COMMANDS_CHANNEL_ID` | Optional: lock commands to one channel |
-| `WAR_STATUS_CHANNEL_ID` | `/war status` posts here |
-| `WAR_ALERTS_CHANNEL_ID` | Threshold alerts post here |
-| `WAR_STATS_CHANNEL_ID` | `/war stats` posts here |
-| `POLL_SECONDS` | Optional, default `180` |
-| `ALERT_MINUTES` | Optional, default `720,120,30` |
+Set in a git-ignored `.env` file or the process environment. **Tokens live only in env, never in git.**
 
-`war_snapshot.json` is written at runtime in the working directory (git-ignored).
+| Variable | Required | Used for |
+| --- | --- | --- |
+| `DISCORD_TOKEN` | yes | Bot login |
+| `COC_TOKEN` | for war features | Clash of Clans API key |
+| `CLAN_TAG` | for war features | Clan tag, `#2PP0` style (`%232PP0` also works) |
+| `GUILD_ID` | no | Register slash commands to one server (instant) instead of globally (up to an hour) |
+| `BOT_COMMANDS_CHANNEL_ID` | no | Lock all commands to one channel |
+| `WAR_STATUS_CHANNEL_ID` | no | `/war status` posts here (default: the channel it was run in) |
+| `WAR_ALERTS_CHANNEL_ID` | for alerts | Threshold alerts post here |
+| `WAR_STATS_CHANNEL_ID` | no | `/war stats` posts here (default: the channel it was run in) |
+| `POLL_SECONDS` | no | Poll interval, min 30, default `180` |
+| `ALERT_MINUTES` | no | Alert thresholds, default `720,120,30` |
+| `DATA_DIR` | no | Where `war_snapshot.json` is written, default `./data` |
+
+---
+
+## 🥧 Deploy on a Raspberry Pi
+
+```bash
+# Node 20+ (e.g. via NodeSource), then:
+git clone -b claude-forge https://github.com/PHTMGatt/War-Oracle-Bot.git
+cd War-Oracle-Bot
+npm ci --omit=dev
+nano .env          # DISCORD_TOKEN, COC_TOKEN, CLAN_TAG, channel ids (chmod 600 .env)
+```
+
+`/etc/systemd/system/war-oracle.service`:
+
+```ini
+[Unit]
+Description=War Oracle Discord Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=/home/pi/War-Oracle-Bot
+ExecStart=/usr/bin/node src/index.js
+EnvironmentFile=/home/pi/War-Oracle-Bot/.env
+Restart=always
+RestartSec=5
+User=pi
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now war-oracle
+journalctl -u war-oracle -f
+```
+
+The bot only makes outbound connections (Discord and the Clash API), so no router ports need opening. Remember to register the Pi's public IP on the Clash API key.
+
+---
 
 ## ✅ CI
 
-GitHub Actions runs install + syntax check and `npm audit --audit-level=high` on every PR. No secrets needed.
+GitHub Actions runs install, tests, `npm audit --audit-level=high`, a secrets scan (gitleaks) and a config check on every PR and `claude-forge` push. No secrets needed.
 
 ---
 

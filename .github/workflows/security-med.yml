@@ -1,0 +1,66 @@
+# security-med
+# MED: nightly and manual. Full-history secret scan and dependency review.
+# Schedule and manual runs only exist once this file is on the default branch; until then it also runs
+# when claude-forge changes this file, so it is proven green first.
+# Read-only: no secrets, no deploys.
+name: security-med
+
+on:
+  schedule:
+    - cron: '47 6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [claude-forge]
+    paths: ['.github/workflows/security-med.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-med-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GITLEAKS_VERSION: 8.21.2
+  AUDIT_DIRS: "."
+
+jobs:
+  med:
+    name: med (history, dependency review)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install gitleaks (pinned, checksum-verified)
+        run: |
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          cd "$RUNNER_TEMP"
+          curl -fsSLO "$base/$tarball"
+          curl -fsSLO "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          grep " ${tarball}\$" "gitleaks_${GITLEAKS_VERSION}_checksums.txt" | sha256sum -c -
+          tar -xzf "$tarball" gitleaks
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Secret scan (all commits, redacted)
+        run: gitleaks git . --config .gitleaks.toml --redact --no-banner --verbose
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Dependency review (full audit report and lockfile sources)
+        run: |
+          fail=0
+          for d in $AUDIT_DIRS; do
+            echo "::group::full npm audit report in $d"
+            (cd "$d" && npm audit) || true
+            echo "::endgroup::"
+            bad=$(grep -E '"resolved": "' "$d/package-lock.json" | grep -v 'https://registry.npmjs.org/' | grep -vE '"resolved": "(file:.*)?"' || true)
+            if [ -n "$bad" ]; then echo "::error::$d: dependencies resolved outside the npm registry"; echo "$bad"; fail=1; fi
+          done
+          [ "$fail" = 0 ] && echo "all lockfile entries resolve from the npm registry"
+          exit $fail
