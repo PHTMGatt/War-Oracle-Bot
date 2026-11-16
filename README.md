@@ -1,8 +1,8 @@
-# 🧠 War Oracle
+# War Oracle
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/PHTMGatt/12-React-Portfolio/main/src/assets/photos/War%20Oracle.png" width="900" alt="War Oracle project artwork">
-</p>
+[![CI](https://github.com/PHTMGatt/War-Oracle-Bot/actions/workflows/ci.yml/badge.svg)](https://github.com/PHTMGatt/War-Oracle-Bot/actions/workflows/ci.yml)
+
+![War Oracle](docs/screenshot.png)
 
 **War Oracle** is a Discord bot for **Clash of Clans** clans: war intelligence plus a few channel safety tools, in one bot with one token.
 
