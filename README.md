@@ -12,6 +12,10 @@ It watches the active war, posts clean status and stats, and sends **non-spammy*
 
 ---
 
+## Status
+
+Checked 2026-11-26 on Windows with Node 26. `npm ci` succeeds and `npm test` passes (8/8). The bot was not started against Discord or the Clash API, and the Pi steps were not run.
+
 ## ⚔️ Commands
 
 | Command | Who | What it does |
